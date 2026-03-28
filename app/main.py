@@ -1,8 +1,5 @@
-import os
 
 from app.models import (
-    EchoRequest,
-    AnalyzeRequest,
     ChatRequest,
     SummaryRequest,
     RewriteRequest,
@@ -10,10 +7,6 @@ from app.models import (
     MeetingDigestRequest,
     TaskBriefRequest,
     PingResponse,
-    PriceResponse,
-    SearchResponse,
-    EchoResponse,
-    AnalyzeResponse,
     ChatResponse,
     SummaryResponse,
     RewriteResponse,
@@ -28,7 +21,7 @@ import time
 import logging
 import uuid
 
-from fastapi import FastAPI,Query,HTTPException,Request
+from fastapi import FastAPI,HTTPException,Request
 from contextlib import asynccontextmanager
 from app.responses import success_response
 from app.responses import build_ai_data
@@ -56,6 +49,7 @@ SUPPORTED_ENDPOINTS = [
     f"{API_PREFIX}/task_brief",
     "/health",
     "/info",
+    "/ping"
 ]
 
 @asynccontextmanager

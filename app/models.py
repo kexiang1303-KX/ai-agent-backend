@@ -10,7 +10,7 @@ class ChatHistoryItem(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str = Field(...,min_length=1,max_length=2000)
-    history: list[ChatHistoryItem] = []
+    history: list[ChatHistoryItem] = Field(default_factory=list)
     style: Literal["teacher", "coach", "simple","interviewer"] = "teacher" #默认 teacher
 
 class SummaryRequest(BaseModel):
@@ -55,6 +55,10 @@ class ChatData(BaseModel):
     ai_message: str
     model: str
     meta: ChatMeta
+
+class PingData(BaseModel):
+    message: str
+    status: str
 
 '''
     “缩短信息”
@@ -171,4 +175,9 @@ class ChatResponse(BaseModel):
     code: int
     message: str
     data: ChatData
+
+class PingResponse(BaseModel):
+    code: int
+    message: str
+    data: PingData
 
