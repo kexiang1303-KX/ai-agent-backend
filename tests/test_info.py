@@ -26,9 +26,10 @@ def test_info():
     info = data["data"]
     assert info["service_name"] == "ai-agent-ios-backend"
     assert info["version"] == "0.1.0"
-    assert "default_model" in info
+    assert isinstance(info["default_model"], str)
 
     assert isinstance(info["endpoints"], list)
     assert "/health" in info["endpoints"]
     assert "/info" in info["endpoints"]
     assert "/api/v1/summary" in info["endpoints"]
+

@@ -1,17 +1,9 @@
 from pydantic import BaseModel,Field
 from typing import Literal
 
-
 """
     ===== 请求模型 =====
 """
-class EchoRequest(BaseModel):
-    text: str
-
-class AnalyzeRequest(BaseModel):
-    content: str
-    mode: str
-
 class ChatHistoryItem(BaseModel):
     role: Literal["user", "system", "developer", "assistant"] # 注意：原图拼写错误 developer -> developer
     content: str = Field(..., min_length=1,max_length=2000)
@@ -52,34 +44,6 @@ class InfoData(BaseModel):
 class HealthData(BaseModel):
     status: str
 
-class PingData(BaseModel):
-    message: str
-    status: str
-
-class PriceData(BaseModel):
-    symbol: str
-    mock_price: float
-    source: str
-
-class SearchData(BaseModel):
-    keyword: str
-    limit: int
-    results: list[str]
-    source: str
-
-class EchoData(BaseModel):
-    message: str
-    length: str
-    summary: str
-
-class AnalyzeData(BaseModel):
-    content: str
-    mode: str
-    summary: str
-
-'''
-    “聊天”
-'''
 class ChatMeta(BaseModel):
     style: str
     history_count: int
@@ -208,60 +172,3 @@ class ChatResponse(BaseModel):
     message: str
     data: ChatData
 
-
-class PingResponse(BaseModel):
-    code: int
-    message: str
-    data: PingData
-
-
-class PriceResponse(BaseModel):
-    code: int
-    message: str
-    data: PriceData
-
-
-class SearchResponse(BaseModel):
-    code: int
-    message: str
-    data: SearchData
-
-
-class EchoResponse(BaseModel):
-    code: int
-    message: str
-    data: EchoData
-
-
-class AnalyzeResponse(BaseModel):
-    code: int
-    message: str
-    data: AnalyzeData
-
-
-
-class MarketData:
-    def __init__(self,symbol,price,exchange,is_hot):
-        self.symbol = symbol
-        self.price = price
-        self.exchange = exchange
-        self.is_hot = is_hot
-
-
-    def show_info(self):
-        print("=== 市场数据 ===")
-        print(f'交易对：{self.symbol}')
-        print(f'价格：{self.price}')
-        print(f'交易所：{self.exchange}')
-        print(f"热门: {self.is_hot}")
-
-    def is_price_high(self, threshold):
-        return self.price > threshold
-
-    def to_dict(self):
-        return {
-            "symbol": self.symbol,
-            "price": self.price,
-            "exchange": self.exchange,
-            "is_hot": self.is_hot
-        }

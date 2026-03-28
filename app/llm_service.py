@@ -1,14 +1,13 @@
-#模型服务类
 import json
 import logging
 import os
-from http.client import responses
 from pathlib import Path
+
 from dotenv import load_dotenv
 from openai import OpenAI
+
 from app.exceptions import AppError
 
-#路径
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_PATH = BASE_DIR / ".env"
 load_dotenv(dotenv_path=ENV_PATH)
@@ -17,8 +16,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
 
-if OPENAI_BASE_URL :
-    client = OpenAI(api_key=OPENAI_API_KEY,base_url=OPENAI_BASE_URL)
+if OPENAI_BASE_URL:
+    client = OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
 else:
     client = OpenAI(api_key=OPENAI_API_KEY)
 
@@ -54,14 +53,13 @@ def clean_json_text(raw_text: str) -> str:
     return text
 
 def normalize_extract_result(data: dict) -> dict:
-    todos = data.get("todos",[])
-    time_info = data.get("time_info",[])
-    topic = data.get("topic","")
+    todos = data.get("todos", [])
+    time_info = data.get("time_info", [])
+    topic = data.get("topic", "")
 
-    #如果是 字符串->列表
-    if isinstance(todos,str):
+    if isinstance(todos, str):
         todos = [todos]
-    elif not isinstance(todos,list):
+    elif not isinstance(todos, list):
         todos = []
 
     if isinstance(time_info, str):
@@ -69,13 +67,11 @@ def normalize_extract_result(data: dict) -> dict:
     elif not isinstance(time_info, list):
         time_info = []
 
-    #如果是 列表 -> 字符串
     if isinstance(topic, list):
-        topic = ";".json(str(x) for x in topic)
+        topic = ";".join(str(x) for x in topic)
     elif not isinstance(topic, str):
-        topic = ''
+        topic = ""
 
-    # 保证列表元素都是字符串
     todos = [str(x) for x in todos]
     time_info = [str(x) for x in time_info]
     topic = str(topic)
@@ -83,8 +79,15 @@ def normalize_extract_result(data: dict) -> dict:
     return {
         "todos": todos,
         "time_info": time_info,
-        "topic": topic
+        "topic": topic,
     }
+
+
+def ensure_llm_config() -> None:
+    if not OPENAI_API_KEY:
+        raise AppError("CONFIG_ERROR", "服务端未配置 OPENAI_API_KEY")
+    if not OPENAI_MODEL:
+        raise AppError("CONFIG_ERROR", "服务端未配置 OPENAI_MODEL")
 
 """
 =================================================
@@ -111,12 +114,11 @@ def chat_with_llm(message: str,history: list[dict] | None = None, style: str = "
     聊天对话请求接口模型
     返回：（ai_message, model_name）模型返回的结果 和 用的模型名
     '''
-    if not OPENAI_API_KEY :
-        raise AppError("CONFIG_ERROR","服务端未配置 OPENAI_API_KEY")
+    ensure_llm_config()
 
     system_propmt = build_system_propmt(style)
+    history = history or []
 
-    #日志记录
     logging.info(
         f"开始调用模型 | model={OPENAI_MODEL} | style={style} | history_count={len(history)} | message={message}"
     )
@@ -158,8 +160,7 @@ def summary_text(content: str, max_sentences:int = 3) -> tuple[str, str]:
     总结分析接口请求模型
     return：（summary_message, model_name）模型返回的结果 和 用的模型名
     """
-    if not OPENAI_API_KEY :
-        raise AppError("CONFIG_ERROR","服务端未配置 OPENAI_API_KEY")
+    ensure_llm_config()
 
     summary_prompt = (
         "你是一名专业的信息总结助手"
@@ -195,8 +196,7 @@ def rewrite_text(content: str, tone:str = "professional") -> tuple[str, str]:
     """
     return (rewritten_text, model_name)
     """
-    if not OPENAI_API_KEY :
-        raise AppError("CONFIG_ERROR","服务端未配置 OPENAI_API_KEY")
+    ensure_llm_config()
 
     tone_prompt_map = {
         "formal": "请将用户提供的内容改写为正式、书面化表达。",
@@ -240,8 +240,7 @@ def extract_info(content: str) -> tuple[dict, str]:
     """
     提取助手接口请求模型
     """
-    if not OPENAI_API_KEY :
-        raise AppError("CONFIG_ERROR","服务端未配置 OPENAI_API_KEY")
+    ensure_llm_config()
 
     system_prompt = (
         "你是一名信息提取助手。"
@@ -263,16 +262,16 @@ def extract_info(content: str) -> tuple[dict, str]:
 
     raw_result = response.choices[0].message.content or ""
 
-    cleand_text = clean_json_text(raw_result)
+    cleaned_text = clean_json_text(raw_result)
 
     logging.info(
         f'提取模型调用成功 | model={OPENAI_MODEL} | input_len={len(raw_result)}'
     )
 
     try:
-        parsed = json.loads(raw_result)
-    except Exception as e:
-        raise AppError("INVALID_MODEL_OUTPUT",f'模型没有返回合法 JSON: {raw_result}')
+        parsed = json.loads(cleaned_text)
+    except Exception:
+        raise AppError("INVALID_MODEL_OUTPUT", f"模型没有返回合法 JSON: {raw_result}")
 
     normalized = normalize_extract_result(parsed)
-    return normalized,OPENAI_MODEL
+    return normalized, OPENAI_MODEL

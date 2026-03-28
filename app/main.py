@@ -162,7 +162,7 @@ def info():
     return success_response({
         "service_name": SERVICE_NAME,
         "version": APP_VERSION,
-        "default_model": OPENAI_MODEL,
+        "default_model": OPENAI_MODEL or "not_configured",
         "endpoints": SUPPORTED_ENDPOINTS
     })
 
@@ -342,6 +342,5 @@ def task_brief(data: TaskBriefRequest):
             }
         )
     )
-
 
 
