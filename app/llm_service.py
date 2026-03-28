@@ -38,19 +38,26 @@ def clean_json_text(raw_text: str) -> str:
     """
     获取清洗格式后的字符串
     """
-    #strip() 是 Python 中字符串（str）类型的一个内置方法，它的主要作用是移除字符串首尾的指定字符。
-    #如果不指定字符，默认会移除所有的空白字符，包括空格、制表符（\t）、换行符（\n）等。
+
+    # strip() 是 Python 中字符串（str）类型的一个内置方法，它的主要作用是移除字符串首尾的指定字符。
+    # 如果不指定字符，默认会移除所有的空白字符，包括空格、制表符（\t）、换行符（\n）等。
     text = raw_text.strip()
 
-    if text.startswith("```json"):
-        text = text.removeprefix("```json").strip()
-    elif text.startswith("```"):
-        text = text.removeprefix("```").strip()
+    if not text.startswith("```"):
+        return text
 
-    if text.endswith("```"):
-        text = text.removesuffix("```").strip()
+    lines = text.splitlines() #按\n切分
+    if len(lines) < 2:
+        return text
 
-    return text
+    first_line = lines[0].strip()
+    last_line = lines[-1].strip()
+
+    if not first_line.startswith("```") or last_line != "```":
+        return text
+
+    body = "\n".join(lines[1:-1]).strip()
+    return body
 
 def normalize_extract_result(data: dict) -> dict:
     todos = data.get("todos", [])
