@@ -1,4 +1,4 @@
-# AI Agent iOS Backend
+# AI Agent Backend
 
 一个基于 FastAPI 构建的 AI 应用后端学习项目，用于练习 AI 接口封装、结构化输出、工作流编排、日志、错误处理和 API 版本化设计。
 
